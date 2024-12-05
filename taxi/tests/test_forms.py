@@ -4,16 +4,20 @@ from django.urls import reverse_lazy
 from taxi.forms import DriverCreationForm
 
 
-class FormTests(TestCase):
-    def test_user_creation_form_with_valid_data(self):
-        form_data = {
+class DriverCreationFormTests(TestCase):
+    def setUp(self):
+        self.form_data = {
             "username": "test_user",
             "password1": "gfdfd53g",
-            "password2": "gfdfd53g",
+            "password2": "differentPass456",
             "first_name": "Andrew",
             "last_name": "Smith",
             "license_number": "XYZ98765",
         }
+
+    def test_user_creation_form_with_valid_data(self):
+        form_data = self.form_data
+        form_data["password2"] = "gfdfd53g"
         form = DriverCreationForm(data=form_data)
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data["username"], form_data["username"])
@@ -28,26 +32,20 @@ class FormTests(TestCase):
         )
 
     def test_user_creation_form_with_invalid_passwords(self):
-        form_data = {
-            "username": "test_user",
-            "password1": "gfdfd53g",
-            "password2": "differentPass456",
-            "first_name": "Andrew",
-            "last_name": "Smith",
-            "license_number": "XYZ98765",
-        }
-        form = DriverCreationForm(data=form_data)
+        form = DriverCreationForm(data=self.form_data)
         self.assertFalse(form.is_valid())
         self.assertIn("password2", form.errors)
 
 
 class SearchTests(TestCase):
-
-    def test_driver_search(self):
-        data = {
-            "username": "Ivan",
+    def setUp(self):
+        self.data = {
+            "model": "test_data",
             "page": 1,
         }
+
+    def test_driver_search(self):
+        data = self.data
         response = self.client.get(
             reverse_lazy("taxi:driver-list"), data, follow=True
         )
@@ -56,10 +54,7 @@ class SearchTests(TestCase):
         self.assertContains(response, "page")
 
     def test_car_search(self):
-        data = {
-            "model": "Sedan",
-            "page": 1,
-        }
+        data = self.data
         response = self.client.get(
             reverse_lazy("taxi:car-list"), data, follow=True
         )
@@ -68,10 +63,7 @@ class SearchTests(TestCase):
         self.assertContains(response, "page")
 
     def test_manufacturer_search(self):
-        data = {
-            "name": "BMW",
-            "page": 1,
-        }
+        data = self.data
         response = self.client.get(
             reverse_lazy("taxi:manufacturer-list"), data, follow=True
         )
